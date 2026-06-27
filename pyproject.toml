@@ -1,0 +1,10 @@
+[project]
+name = "myqtt-performance-hud"
+version = "0.1.0"
+description = "Overlay MQTT para monitoramento de CPU/RAM durante jogos"
+requires-python = ">=3.12"
+dependencies = [
+    "paho-mqtt",
+    "psutil",
+    "pyside6",
+]

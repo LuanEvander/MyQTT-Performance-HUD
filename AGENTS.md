@@ -60,12 +60,12 @@ O ambiente de desenvolvimento é estritamente definido para garantir a reproduti
 - **Ferramenta obrigatória**: `pacman`.
 - Todas as dependências de nível de sistema **devem** ser instaladas exclusivamente através do `pacman`. Isso inclui, mas não se limita a: interpretador Python, bibliotecas de desenvolvimento Qt6, suporte a Wayland, e o broker MQTT (ex: `mosquitto`).
 
-### 5.2. Gerenciamento do Ambiente Python e Dependências
+### 5.2. Dependências Python
 
-- **Ferramenta obrigatória**: `uv` (astral-sh/uv).
-- O gerenciamento do ambiente virtual, a instalação das bibliotecas Python específicas do projeto e o controle de versões **devem** ser realizados exclusivamente com o `uv`.
-- As dependências Python obrigatórias do projeto são: `pyside6`, `paho-mqtt` e `psutil`.
-- A estrutura do repositório **deve** conter os arquivos de manifesto gerenciados pelo `uv` (como `pyproject.toml` e `uv.lock`) para assegurar que todos os desenvolvedores (ou agentes de código) reproduzam o mesmo ambiente.
+Todas as dependências Python são instaladas via `pacman`:
+- `pyside6`, `python-paho-mqtt`, `python-psutil`
+
+O `uv` gerencia metadados do projeto (`uv init`) e execução de scripts (`uv run`). `uv sync` não é necessário — não há venv isolado.
 
 ## 6. Critérios de Aceitação (MVP)
 
@@ -81,3 +81,18 @@ O ambiente de desenvolvimento é estritamente definido para garantir a reproduti
 - Múltiplos monitores ou posicionamento dinâmico.
 - Arquivo de configuração (`.conf`).
 - Protocolo Layer-Shell (apenas se `WindowStaysOnTopHint` falhar).
+
+## 8. Comandos
+
+### Setup (uma vez)
+```bash
+sudo pacman -S pyside6 qt6-wayland mosquitto python-paho-mqtt
+uv init --no-readme --no-pin-python
+```
+
+### Execução (3 terminais)
+```bash
+mosquitto -d                                          # terminal 1: broker
+QT_QPA_PLATFORM=wayland python3 src/overlay.py        # terminal 2: overlay
+python3 collector.py                                  # terminal 3: coletor
+```
