@@ -57,6 +57,7 @@ def main() -> None:
     app = QApplication(sys.argv)
 
     signal.signal(signal.SIGINT, lambda sig, frame: app.quit())
+    signal.signal(signal.SIGTERM, lambda sig, frame: app.quit())
 
     timer = QTimer()
     timer.timeout.connect(lambda: None)
@@ -69,7 +70,7 @@ def main() -> None:
         layer = LayerShellQt()
         if layer.available():
             ok = layer.setup(window)
-            print(f"[overlay] Layer-shell: {'ativado' if ok else 'falhou, usando fallback'}")
+            print(f"Layer-shell: {'ativado' if ok else 'falhou, usando fallback'}")
 
     window.show()
 

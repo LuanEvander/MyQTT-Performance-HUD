@@ -12,7 +12,7 @@ def main() -> None:
     client.loop_start()
 
     def cleanup(signum, frame):
-        print("\n[collector] Encerrando...")
+        print("Encerrando...")
         client.loop_stop()
         client.disconnect()
         sys.exit(0)
@@ -24,7 +24,7 @@ def main() -> None:
         ram = psutil.virtual_memory().percent
         client.publish("sistema/pc/cpu", f"{cpu:.0f}", qos=1)
         client.publish("sistema/pc/ram", f"{ram:.0f}", qos=1)
-        print(f"[collector] CPU: {cpu:.0f}% | RAM: {ram:.0f}%")
+        print(f"CPU: {cpu:.0f}% | RAM: {ram:.0f}%")
         time.sleep(2)
 
 

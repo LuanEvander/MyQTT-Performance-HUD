@@ -90,9 +90,14 @@ sudo pacman -S pyside6 qt6-wayland mosquitto python-paho-mqtt
 uv init --no-readme --no-pin-python
 ```
 
-### Execução (3 terminais)
+### Execução (recomendado)
 ```bash
-mosquitto -d                                          # terminal 1: broker
+python3 runner.py                                     # inicia tudo; Ctrl+C encerra
+```
+
+### Execução (3 terminais para depuração)
+```bash
+mosquitto -v                                          # terminal 1: broker
 QT_QPA_PLATFORM=wayland python3 -m src.overlay        # terminal 2: overlay
-python3 collector.py                                  # terminal 3: coletor
+python3 -m src.collector                              # terminal 3: coletor
 ```

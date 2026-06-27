@@ -107,18 +107,32 @@ Para outras distribuições Linux, instale os equivalentes via seu gerenciador d
 
 ## 8. Execução
 
-A execução requer **três terminais** separados (ou um terminal com o broker em segundo plano).
-
-### Passo 1 — Iniciar o broker MQTT
+### Método principal (recomendado) — runner.py
 
 ```bash
-mosquitto -d
+python3 runner.py
 ```
 
-O broker (`mosquitto`) gerencia o roteamento das mensagens entre o coletor e o overlay. A flag `-d` o coloca em segundo plano (daemon).
+Um único comando que inicia o broker, o overlay e o coletor simultaneamente. As saídas aparecem prefixadas no mesmo terminal:
 
-### Passo 2 — Iniciar o overlay (janela gráfica)
+```
+[broker] 1782531444: mosquitto version 2.1.2 running
+[overlay] Layer-shell: ativado
+[collector] CPU: 23% | RAM: 61%
+```
 
+Pressione `Ctrl+C` para encerrar todos os processos gracefulmente.
+
+### Método alternativo — 3 terminais
+
+Cada processo em seu próprio terminal, útil para depuração individual.
+
+#### Terminal 1 — Broker MQTT
+```bash
+mosquitto -v
+```
+
+#### Terminal 2 — Overlay (janela gráfica)
 ```bash
 QT_QPA_PLATFORM=wayland python3 -m src.overlay
 ```
@@ -127,15 +141,12 @@ Uma janela transparente com "CPU: 0%" e "RAM: 0%" deve aparecer no canto superio
 
 > **Nota:** Use `python3 -m src.overlay`, **não** `python3 src/overlay.py`. O `-m` garante que o Python encontre o módulo compartilhado `src.mqtt_client`.
 
-A variável `QT_QPA_PLATFORM=wayland` força o Qt6 a usar o backend nativo Wayland. Sem ela, o Qt6 pode tentar usar XWayland e o overlay pode não se sobrepor corretamente a jogos em tela cheia.
+A variável `QT_QPA_PLATFORM=wayland` força o Qt6 a usar o backend nativo Wayland.
 
-### Passo 3 — Iniciar o coletor
-
+#### Terminal 3 — Coletor
 ```bash
-python3 collector.py
+python3 -m src.collector
 ```
-
-O coletor começa a publicar os percentuais de CPU e RAM nos tópicos `sistema/pc/cpu` e `sistema/pc/ram` a cada 2 segundos. O overlay os recebe e atualiza a interface automaticamente.
 
 ### Ordem de inicialização
 
@@ -147,7 +158,9 @@ O coletor começa a publicar os percentuais de CPU e RAM nos tópicos `sistema/p
 
 ### Encerramento
 
-Pressione `Ctrl+C` em cada terminal. Ambos os processos (coletor e overlay) desconectam do broker automaticamente via tratamento de `SIGINT`.
+No método principal (`runner.py`): `Ctrl+C` no mesmo terminal encerra tudo.
+
+No método alternativo: `Ctrl+C` em cada terminal. Coletor e overlay desconectam do broker automaticamente.
 
 ## 9. Considerações Finais
 
