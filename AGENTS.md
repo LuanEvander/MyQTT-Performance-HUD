@@ -2,7 +2,7 @@
 
 ## 1. Objetivo Geral do Projeto
 
-Desenvolver um protótipo funcional de um overlay gráfico (HUD) para exibir métricas de recursos da máquina (CPU, RAM) sobre jogos em execução em tela cheia no ambiente Wayland (CachyOS). O sistema utilizará o protocolo MQTT para comunicação entre o coletor de dados e a interface de exibição, e o framework Qt6 (PySide6) para a construção da janela transparente e sobreposta. O gerenciamento do ambiente Python e das dependências será feito **exclusivamente** com a ferramenta `uv`.
+Desenvolver um protótipo funcional de um overlay gráfico para exibir métricas de recursos da máquina (CPU, RAM) sobre jogos em execução em tela cheia no ambiente Wayland (CachyOS). O sistema utilizará o protocolo MQTT para comunicação entre o coletor de dados e a interface de exibição, e o framework Qt6 (PySide6) para a construção da janela transparente e sobreposta.
 
 ## 2. Arquitetura de Alto Nível
 
@@ -62,10 +62,37 @@ A compatibilidade com Wayland exige atenção especial:
    - Overlay -> Atualiza a interface em tempo real.
 3. **Encerramento**: Ambos os processos devem incluir um `try/except` para capturar `KeyboardInterrupt` e desconectar gracefulmente do broker.
 
-## 6. Setup do Ambiente de Desenvolvimento (Obrigatório)
+## 6. Setup do Ambiente de Desenvolvimento (Obrigações Técnicas)
 
-O agente **deve** utilizar o `pacman` para dependências de sistema e o `uv` para gerenciamento do ambiente Python. É estritamente proibido o uso do `pip` diretamente para instalação de pacotes no sistema global.
+O ambiente de desenvolvimento é estritamente definido para garantir a reprodutibilidade e a integração nativa com o sistema CachyOS (base Arch Linux).
 
-### 6.1. Dependências do Sistema (via `pacman`)
+### 6.1. Gerenciamento de Pacotes do Sistema
 
-Para instalar as bibliotecas e ferramentas necessárias no nível do sistema operacional utilize o gerenciador de pacotes `pacman`.
+- **Ferramenta obrigatória**: `pacman`.
+- Todas as dependências de nível de sistema **devem** ser instaladas exclusivamente através do `pacman`. Isso inclui, mas não se limita a: interpretador Python, bibliotecas de desenvolvimento Qt6, suporte a Wayland, e o broker MQTT (ex: `mosquitto`).
+
+### 6.2. Gerenciamento do Ambiente Python e Dependências
+
+- **Ferramenta obrigatória**: `uv` (astral-sh/uv).
+- O gerenciamento do ambiente virtual, a instalação das bibliotecas Python específicas do projeto e o controle de versões **devem** ser realizados exclusivamente com o `uv`.
+- As dependências Python obrigatórias do projeto são: `pyside6`, `paho-mqtt` e `psutil`.
+- A estrutura do repositório **deve** conter os arquivos de manifesto gerenciados pelo `uv` (como `pyproject.toml` e `uv.lock`) para assegurar que todos os desenvolvedores (ou agentes de código) reproduzam o mesmo ambiente.
+
+### 6.3. Observação sobre a Proibição de Descrição de Comandos
+
+Este documento não descreve os comandos específicos para instalação ou configuração. A implementação prática deve ser realizada pelo agente de código seguindo a documentação oficial das ferramentas `pacman` e `uv`, respeitando as obrigações estabelecidas acima.
+
+## 7. Critérios de Aceitação para o Protótipo Mínimo Viável (MVP)
+
+- O script do Coletor deve rodar sem erros e publicar números inteiros (strings) nos tópicos.
+- O script do Overlay deve abrir uma janela preta (transparente) com textos estáticos "CPU: 0%" e "RAM: 0%".
+- Ao rodar ambos os scripts simultaneamente, os números na janela do overlay devem se atualizar a cada 2 segundos com os valores reais do sistema.
+- A janela do overlay deve permanecer visível sobre qualquer janela aberta (incluindo navegadores e jogos em modo janela/tela cheia).
+- O clique do mouse e o foco do teclado devem funcionar perfeitamente no aplicativo que está sob o overlay (a janela não pode interceptar interações).
+
+## 8. Não-Escopo do Protótipo (Para este estágio)
+
+- Monitoramento de GPU, temperatura ou rede.
+- Suporte a múltiplos monitores com posicionamento dinâmico.
+- Sistema de configuração/arquivo `.conf` para personalização de cores ou posição.
+- Suporte a protocolo Layer-Shell (será considerado apenas se o `WindowStaysOnTopHint` falhar nos testes iniciais).
