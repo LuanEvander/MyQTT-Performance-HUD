@@ -2,7 +2,9 @@
 
 ## 1. Visão Geral do Projeto
 
-Este projeto consiste no desenvolvimento de um protótipo funcional para monitoramento de recursos de uma máquina pessoal (CPU e RAM) durante a execução de jogos em tela cheia. A solução é composta por dois processos independentes que se comunicam via protocolo MQTT: um coletor de dados e um overlay gráfico customizado desenvolvido com Qt6, otimizado para o ambiente Wayland no sistema operacional CachyOS.
+Este projeto consiste no desenvolvimento de um protótipo funcional para monitoramento de recursos de uma máquina pessoal (CPU e RAM) durante a execução de jogos em tela cheia. A solução é composta por dois processos independentes que se comunicam via protocolo MQTT: um coletor de dados e um overlay gráfico customizado desenvolvido com Qt6, otimizado para o ambiente Wayland.
+
+**Sistema alvo:** CachyOS (base Arch Linux) com servidor gráfico Wayland. Provavelmente funcional em qualquer distribuição Linux com Wayland, Python 3.12+, Qt6 e as dependências listadas na seção 7.
 
 ---
 
@@ -89,6 +91,64 @@ Ao final do desenvolvimento e execução do protótipo, espera-se alcançar os s
 
 ---
 
-## 6. Considerações Finais
+## 7. Dependências
+
+Todas as dependências são instaladas via `pacman` (sistema base Arch Linux):
+
+| Pacote | Função |
+|--------|--------|
+| `pyside6` | Interface gráfica Qt6 (PySide6) |
+| `qt6-wayland` | Suporte Wayland para o overlay Qt6 |
+| `mosquitto` | Broker MQTT local |
+| `python-paho-mqtt` | Cliente MQTT para Python |
+| `python-psutil` | Coleta de métricas de CPU e RAM |
+
+Para outras distribuições Linux, instale os equivalentes via seu gerenciador de pacotes ou via `pip`.
+
+## 8. Execução
+
+A execução requer **três terminais** separados (ou um terminal com o broker em segundo plano).
+
+### Passo 1 — Iniciar o broker MQTT
+
+```bash
+mosquitto -d
+```
+
+O broker (`mosquitto`) gerencia o roteamento das mensagens entre o coletor e o overlay. A flag `-d` o coloca em segundo plano (daemon).
+
+### Passo 2 — Iniciar o overlay (janela gráfica)
+
+```bash
+QT_QPA_PLATFORM=wayland python3 -m src.overlay
+```
+
+Uma janela transparente com "CPU: 0%" e "RAM: 0%" deve aparecer no canto superior esquerdo da tela.
+
+> **Nota:** Use `python3 -m src.overlay`, **não** `python3 src/overlay.py`. O `-m` garante que o Python encontre o módulo compartilhado `src.mqtt_client`.
+
+A variável `QT_QPA_PLATFORM=wayland` força o Qt6 a usar o backend nativo Wayland. Sem ela, o Qt6 pode tentar usar XWayland e o overlay pode não se sobrepor corretamente a jogos em tela cheia.
+
+### Passo 3 — Iniciar o coletor
+
+```bash
+python3 collector.py
+```
+
+O coletor começa a publicar os percentuais de CPU e RAM nos tópicos `sistema/pc/cpu` e `sistema/pc/ram` a cada 2 segundos. O overlay os recebe e atualiza a interface automaticamente.
+
+### Ordem de inicialização
+
+| Ordem | Processo | O que acontece |
+|-------|----------|----------------|
+| 1º | `mosquitto` | Broker aguarda conexões |
+| 2º | Overlay | Conecta ao broker e se inscreve em `sistema/pc/#` |
+| 3º | Coletor | Conecta ao broker e começa a publicar |
+
+### Encerramento
+
+Pressione `Ctrl+C` em cada terminal. Ambos os processos (coletor e overlay) desconectam do broker automaticamente via tratamento de `SIGINT`.
+
+## 9. Considerações Finais
 
 O projeto proposto equilibra a exigência acadêmica de aplicação de um protocolo de redes com a resolução de um problema real e imediato (monitoramento de desempenho em jogos). A escolha do MQTT, justificada pelo desacoplamento e pela didática, garante que o resultado final seja não apenas um software funcional, mas uma demonstração sólida dos conceitos fundamentais de comunicação em redes de computadores.
