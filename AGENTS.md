@@ -93,6 +93,6 @@ uv init --no-readme --no-pin-python
 ### Execução (3 terminais)
 ```bash
 mosquitto -d                                          # terminal 1: broker
-QT_QPA_PLATFORM=wayland python3 src/overlay.py        # terminal 2: overlay
+QT_QPA_PLATFORM=wayland python3 -m src.overlay        # terminal 2: overlay
 python3 collector.py                                  # terminal 3: coletor
 ```
