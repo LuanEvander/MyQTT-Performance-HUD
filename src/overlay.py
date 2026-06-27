@@ -1,10 +1,13 @@
+import os
+import signal
 import sys
 
 import paho.mqtt.client as mqtt
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QTimer, Qt, Signal
 from PySide6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget
 
 from src.mqtt_client import create_mqtt_client
+from src.wayland_layer import LayerShellQt
 
 
 class OverlayWindow(QWidget):
@@ -52,7 +55,22 @@ class OverlayWindow(QWidget):
 
 def main() -> None:
     app = QApplication(sys.argv)
+
+    signal.signal(signal.SIGINT, lambda sig, frame: app.quit())
+
+    timer = QTimer()
+    timer.timeout.connect(lambda: None)
+    timer.start(200)
+
     window = OverlayWindow()
+
+    if os.environ.get("WAYLAND_DISPLAY"):
+        _ = window.winId()
+        layer = LayerShellQt()
+        if layer.available():
+            ok = layer.setup(window)
+            print(f"[overlay] Layer-shell: {'ativado' if ok else 'falhou, usando fallback'}")
+
     window.show()
 
     client = create_mqtt_client("overlay-pc")

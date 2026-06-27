@@ -44,7 +44,8 @@ O sistema será composto por **dois processos independentes e leves**, comunican
 A compatibilidade com Wayland exige atenção especial:
 
 - **Forçar o Backend**: O Qt6 pode tentar usar XWayland. Para garantir o uso nativo do Wayland, a aplicação deve ser iniciada com a variável de ambiente `QT_QPA_PLATFORM=wayland`.
-- **Posicionamento**: Definir a geometria da janela no canto superior esquerdo ou inferior direito, com tamanho fixo (ex: 200x100 pixels) para não atrapalhar a visão do jogo.
+- **Posicionamento**: Definir a geometria da janela no canto superior esquerdo ou inferior direito, com tamanho fixo (ex: 200x80 pixels) para não atrapalhar a visão do jogo.
+- **Layer-Shell**: O overlay utiliza o protocolo `zwlr_layer_shell_v1` via `libLayerShellQtInterface.so.6` (ctypes) para garantir posicionamento absoluto, camada `overlay` (acima de tudo) e desativação de interação por teclado. A ativação é automática em ambiente Wayland.
 
 ## 4. Fluxo de Comunicação e Dados
 
@@ -80,7 +81,6 @@ O `uv` gerencia metadados do projeto (`uv init`) e execução de scripts (`uv ru
 - GPU, temperatura ou rede.
 - Múltiplos monitores ou posicionamento dinâmico.
 - Arquivo de configuração (`.conf`).
-- Protocolo Layer-Shell (apenas se `WindowStaysOnTopHint` falhar).
 
 ## 8. Comandos
 
